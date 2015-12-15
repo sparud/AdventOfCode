@@ -244,7 +244,7 @@ object puzzle {
 
 
   def main(args: Array[String]) {
-    println(day13.part1)
-    println(day13.part2)
+    println(day14.part1)
+    println(day14.part2)
   }
 }
