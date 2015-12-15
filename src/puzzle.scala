@@ -242,9 +242,32 @@ object puzzle {
     }.transpose.map(_.sum).max
   }
 
+  object day15 {
+    val input = Source.fromFile("data/15.data").getLines().toSeq
+    val ingredients = input.map(_.split(":") match {
+      case Array(name, rest) => """-?\d+""".r.findAllMatchIn(rest).toList.map(_.toString().toInt)
+    })
+    val features = ingredients.map(_.dropRight(1)).transpose
+    val calories = ingredients.map(_.last)
+
+    def recipes(ingredients: Int, teaspoons: Int): Seq[List[Int]] = ingredients match {
+      case 1 => Seq(List(teaspoons))
+      case n => (0 to teaspoons).flatMap(s => recipes(ingredients-1, teaspoons-s).map(s :: _))
+    }
+
+    def dotProduct(as: Seq[Int], bs: Seq[Int]) = as.zip(bs).map{ case(a, b) => a * b }.sum
+
+    def part1 = recipes(ingredients.length, 100).map (recipe =>
+      features.map(dotProduct(_, recipe).max(0)).product
+    ).max
+
+    def part2 = recipes(ingredients.length, 100).filter(dotProduct(_, calories) == 500).map(recipe =>
+      features.map(dotProduct(_, recipe).max(0)).product
+    ).max
+  }
 
   def main(args: Array[String]) {
-    println(day14.part1)
-    println(day14.part2)
+    println(day15.part1)
+    println(day15.part2)
   }
 }
