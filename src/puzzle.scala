@@ -11,19 +11,19 @@ object puzzle {
 
     val dir = Map('(' -> 1, ')' -> -1)
 
-    def A = input.map(dir).sum
-    def B = input.map(dir).scanLeft(0)(_ + _).indexOf(-1)
+    def part1 = input.map(dir).sum
+    def part2 = input.map(dir).scanLeft(0)(_ + _).indexOf(-1)
   }
 
   object day2 {
 
     val input = Source.fromFile("data/2.data").getLines().toList
 
-    def A = input.map(_.split("x").map(_.toInt))
+    def part1 = input.map(_.split("x").map(_.toInt))
         .map { case Array(a, b, c) => Array(a*b, a*c, b*c) }
         .map(sides => 2 * sides.sum + sides.min)
         .sum
-    def B = input.map(_.split("x").map(_.toInt).sorted).map { case Array(a, b, c) => 2*(a+b) + a*b*c }.sum
+    def part2 = input.map(_.split("x").map(_.toInt).sorted).map { case Array(a, b, c) => 2*(a+b) + a*b*c }.sum
   }
 
   object day3 {
@@ -36,8 +36,8 @@ object puzzle {
       case ((x, y), 'v') => (x, y - 1)
     }
 
-    def A = positions(s).distinct.size
-    def B = s.grouped(2).toList.transpose.map(_.mkString).flatMap(positions).distinct.size
+    def part1 = positions(s).distinct.size
+    def part2 = s.grouped(2).toList.transpose.map(_.mkString).flatMap(positions).distinct.size
   }
 
   object day4 {
@@ -48,8 +48,8 @@ object puzzle {
     def withLeading(leading: String) =
        Stream.from(1).map(n => (md5(s"$secretKey$n"), n)).filter(_._1.startsWith(leading)).head._2
 
-    def A = withLeading("00000")
-    def B = withLeading("000000")
+    def part1 = withLeading("00000")
+    def part2 = withLeading("000000")
   }
 
   object day5 {
@@ -58,14 +58,14 @@ object puzzle {
     val vowels = "aeiou".toSet
     val forbidden = List("ab", "cd", "pq", "xy")
 
-    def niceA(s: String) =
+    def nice1(s: String) =
       s.count(vowels) >= 3 && s.sliding(2).exists(p => p(0) == p(1)) && !forbidden.exists(s.contains)
 
-    def niceB(s: String) =
+    def nice2(s: String) =
       """(..).*\1""".r.findFirstMatchIn(s).isDefined && s.sliding(3).exists(p => p(0) == p(2))
 
-    def A = input.count(niceA)
-    def B = input.count(niceB)
+    def part1 = input.count(nice1)
+    def part2 = input.count(nice2)
   }
 
   object day6 {
@@ -75,13 +75,13 @@ object puzzle {
 
     def pix(pos: (Int, Int)) = pos._1 * 1000 + pos._2
 
-    def operationA(state: Array[Int], cmd: String, pos: (Int, Int)) = cmd match {
+    def operation1(state: Array[Int], cmd: String, pos: (Int, Int)) = cmd match {
       case "turn on"  => state(pix(pos)) = 1
       case "turn off" => state(pix(pos)) = 0
       case "toggle"   => state(pix(pos)) ^= 1
     }
 
-    def operationB(state: Array[Int], cmd: String, pos: (Int, Int)) = cmd match {
+    def operation2(state: Array[Int], cmd: String, pos: (Int, Int)) = cmd match {
       case "turn on"  => state(pix(pos)) += 1
       case "turn off" => state(pix(pos)) = math.max(0, state(pix(pos))-1)
       case "toggle"   => state(pix(pos)) += 2
@@ -96,8 +96,8 @@ object puzzle {
       state.sum
     }
 
-    def A = run(operationA)
-    def B = run(operationB)
+    def part1 = run(operation1)
+    def part2 = run(operation2)
   }
 
   object day7 {
@@ -124,9 +124,9 @@ object puzzle {
       })
     }
 
-    def A = evaluate("a")
+    def part1 = evaluate("a")
 
-    def B = {
+    def part2 = {
       memo = Map("b" -> evaluate("a"))
       evaluate("a")
     }
@@ -137,8 +137,8 @@ object puzzle {
 
     val p = """\\\\|\\"|\\x\w\w""".r
 
-    def A = input.map(line => line.length - (p replaceAllIn (line, ".")).length + 2).sum
-    def B = input.map(_.count(Seq('\\', '"').contains)+2).sum
+    def part1 = input.map(line => line.length - (p replaceAllIn (line, ".")).length + 2).sum
+    def part2 = input.map(_.count(Seq('\\', '"').contains)+2).sum
   }
 
   object day9 {
@@ -150,8 +150,8 @@ object puzzle {
 
     val cities = distances.keys.flatten.toSeq.distinct
 
-    def A = cities.permutations.map(_.sliding(2).map(distances).sum).min
-    def B = cities.permutations.map(_.sliding(2).map(distances).sum).max
+    def part1 = cities.permutations.map(_.sliding(2).map(distances).sum).min
+    def part2 = cities.permutations.map(_.sliding(2).map(distances).sum).max
   }
 
   object day10 {
@@ -162,8 +162,8 @@ object puzzle {
       lookandsay(rest, init.head :: init.length :: res)
     }
 
-    def A = (1 to 40).foldLeft(input.map(_.toInt - '0').toList){(s, n) => lookandsay(s, Nil)}.length
-    def B = (1 to 50).foldLeft(input.map(_.toInt - '0').toList){(s, n) => lookandsay(s, Nil)}.length
+    def part1 = (1 to 40).foldLeft(input.map(_.toInt - '0').toList){(s, n) => lookandsay(s, Nil)}.length
+    def part2 = (1 to 50).foldLeft(input.map(_.toInt - '0').toList){(s, n) => lookandsay(s, Nil)}.length
   }
 
   object day11 {
@@ -179,30 +179,30 @@ object puzzle {
       inc.get(last).map(prefix + _).getOrElse(next(prefix) + "a")
     }
 
-    def A = Iterator.iterate(input)(next).filter(s => triples.exists(s.contains(_)) && pair.findFirstIn(s).isDefined).next()
+    def part1 = Iterator.iterate(input)(next).filter(s => triples.exists(s.contains(_)) && pair.findFirstIn(s).isDefined).next()
 
-    def B = Iterator.iterate(next(A))(next).filter(s => triples.exists(s.contains(_)) && pair.findFirstIn(s).isDefined).next()
+    def part2 = Iterator.iterate(next(part1))(next).filter(s => triples.exists(s.contains(_)) && pair.findFirstIn(s).isDefined).next()
   }
 
   object day12 {
     val input = Source.fromFile("data/12.data").mkString
 
-    def calcA: Any => Int = {
-      case JArray(l) => l.map(calcA).sum
-      case JObject(kvs) => kvs.map(p => calcA(p._2)).sum
+    def calc1: Any => Int = {
+      case JArray(l) => l.map(calc1).sum
+      case JObject(kvs) => kvs.map(p => calc1(p._2)).sum
       case JInt(n) => n.toInt
       case _ => 0
     }
 
-    def calcB: Any => Int = {
-      case JArray(l) => l.map(calcB).sum
-      case JObject(kvs) if !kvs.exists(_._2 == JString("red")) => kvs.map(p => calcB(p._2)).sum
+    def calc2: Any => Int = {
+      case JArray(l) => l.map(calc2).sum
+      case JObject(kvs) if !kvs.exists(_._2 == JString("red")) => kvs.map(p => calc2(p._2)).sum
       case JInt(n) => n.toInt
       case _ => 0
     }
 
-    def A = calcA(parse(input))
-    def B = calcB(parse(input))
+    def part1 = calc1(parse(input))
+    def part2 = calc2(parse(input))
   }
 
   object day13 {
@@ -216,13 +216,13 @@ object puzzle {
 
     val persons = gains.keys.map(_._1).toList.distinct
 
-    val A = persons.permutations.map(l => l(l.length-1) :: l).map(_.sliding(2).map{
+    val part1 = persons.permutations.map(l => l(l.length-1) :: l).map(_.sliding(2).map{
       case List(a, b) => gains((a, b)) + gains((b, a))
     }.sum).max
 
     val gainsB = gains ++ persons.flatMap(p => Seq((p, "Me") -> 0, ("Me", p) -> 0))
 
-    val B = ("Me" :: persons).permutations.map(l => l(l.length-1) :: l).map(_.sliding(2).map{
+    val part2 = ("Me" :: persons).permutations.map(l => l(l.length-1) :: l).map(_.sliding(2).map{
       case List(a, b) => gainsB((a, b)) + gainsB((b, a))
     }.sum).max
   }
@@ -234,9 +234,9 @@ object puzzle {
 
     def distance(t: Int): List[Int] => Int = { case List(s, t1, t2) => t/(t1+t2)*t1*s + math.min(t1, t%(t1+t2))*s }
 
-    val A = reindeers.map(distance(2503)).max
+    val part1 = reindeers.map(distance(2503)).max
 
-    val B = (1 to 2503).map { t =>
+    val part2 = (1 to 2503).map { t =>
       val distances = reindeers.map(distance(t))
       distances.map(d => if (d == distances.max) 1 else 0)
     }.transpose.map(_.sum).max
@@ -244,10 +244,7 @@ object puzzle {
 
 
   def main(args: Array[String]) {
-    println(day14.A)
-    println(day14.B)
-    //println(day13.B)
-    //import gchq._
-    //println(row_alts(rows(6), grid(6)))
+    println(day14.part1)
+    println(day14.part2)
   }
 }
