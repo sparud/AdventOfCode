@@ -266,8 +266,33 @@ object puzzle {
     ).max
   }
 
+  object day16 {
+    val input = Source.fromFile("data/16.data").getLines().toList
+
+    val tape = Map(
+      "children" -> 3, "cats" -> 7, "samoyeds" -> 2, "pomeranians" -> 3, "akitas" -> 0, "vizslas" -> 0,
+      "goldfish" -> 5, "trees" -> 3, "cars" -> 2, "perfumes" -> 1
+    )
+
+    def parseSue(s: String) = """(\w+): (\d+)""".r.findAllMatchIn(s).toList.map(g => (g.group(1), g.group(2).toInt)).toMap
+    val sues = Stream.from(1).zip(input.map(parseSue)).toMap
+
+    def part1 = sues.mapValues{prefs => prefs.keys.map(key => math.pow(prefs(key) - tape(key), 2)).sum}.minBy(_._2)._1
+
+    val greaterKeys = Seq("cats", "trees")
+    val smallerKeys = Seq("pomeranians", "goldfish")
+
+    val sues2 = sues.filter { case (sue, prefs) =>
+      greaterKeys.forall(key => prefs.getOrElse(key, Int.MaxValue) > tape(key)) &&
+      smallerKeys.forall(key => prefs.getOrElse(key, Int.MinValue) < tape(key))
+    }.mapValues(_ -- (greaterKeys ++ smallerKeys))
+
+    def part2 = sues2.mapValues{prefs => prefs.keys.map(key => math.pow(prefs(key) - tape(key), 2)).sum}.minBy(_._2)._1
+  }
+
+
   def main(args: Array[String]) {
-    println(day15.part1)
-    println(day15.part2)
+    println(day16.part1)
+    println(day16.part2)
   }
 }
