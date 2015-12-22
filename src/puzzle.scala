@@ -290,9 +290,112 @@ object puzzle {
     def part2 = sues2.mapValues{prefs => prefs.keys.map(key => math.pow(prefs(key) - tape(key), 2)).sum}.minBy(_._2)._1
   }
 
+  object day17 {
+    val input = Source.fromFile("data/17.data").getLines().toList
+
+    val boxes = input.map(_.toInt).sorted.reverse
+
+    def pack(boxes: List[Int], left: Int): Int = boxes match {
+      case first :: rest =>
+        (if (first == left) 1 else 0) + (if (first < left) pack(rest, left - first) else 0) + pack(rest, left)
+      case _ => 0
+    }
+
+    def part1 = pack(boxes, 150)
+
+    def pack2(boxes: List[Int], n: Int, left: Int): Iterable[Int] = boxes match {
+      case first :: rest =>
+        (if (first == left) Some(n+1) else None) ++ (if (first < left) pack2(rest, n+1, left - first) else Nil) ++ pack2(rest, n, left)
+      case _ => Nil
+    }
+
+    def part2 = pack2(boxes, 0, 150).groupBy(identity).min._2.size
+
+  }
+
+  object day18 {
+    val input = Source.fromFile("data/18.data").getLines().toList
+    val size = 100
+
+    val state = input.map(line => line.map(Map('.' -> false, '#' -> true))).toIndexedSeq
+
+    val surrounding = List(-1, 0, 1).flatMap(r => List(-1, 0, 1).map((r, _))).filter(_ != (0, 0))
+
+    def get(state: IndexedSeq[IndexedSeq[Boolean]], stuck: Boolean)(p: (Int, Int)) = try {
+      stuck && (p._1 == 0 || p._1 == 99) && (p._2 == 0 || p._2 == 99) || state(p._1)(p._2)
+    } catch {
+      case _: Throwable => false
+    }
+
+    def add(p1: (Int, Int))(p2: (Int, Int)) = (p1._1 + p2._1, p1._2 + p2._2)
+
+    def valCount(state: IndexedSeq[IndexedSeq[Boolean]], stuck: Boolean, p: (Int, Int)) =
+      (get(state, stuck)(p), surrounding.map(add(p)).count(get(state, stuck)))
+
+    def next(state: IndexedSeq[IndexedSeq[Boolean]], stuck: Boolean) =
+      (0 to size-1).map(row => (0 to size-1).map{col => valCount(state, stuck, (row, col)) match {
+        case (true, n) => n == 2 || n == 3 || stuck && (row == 0 || row == 99) && (col == 0 || col == 99)
+        case (false, n) => n == 3
+      }})
+
+    def part1 = (1 to size).foldLeft(state){ case (s, n) => next(s, false) }.map(_.count(identity)).sum
+
+    def part2 = (1 to size).foldLeft(state){ case (s, n) => next(s, true) }.map(_.count(identity)).sum
+  }
+
+  object day19 {
+    val input = Source.fromFile("data/19.data").getLines().toList
+
+    val (rulesData, rest) = input.span(_ != "")
+    val rules = rulesData.map(_.split(" => ")).map(l => (l(0), l(1)))
+    val molecule = rest(1)
+
+    def part1 = rules.flatMap {case (a, b) => a.r.findAllMatchIn(molecule).map(m => molecule.substring(0, m.start) + b + molecule.substring(m.end)) }.distinct.size
+
+    val atoms = molecule.length - molecule.count(_.isLower)
+    def part2 = atoms - "Rn|Ar".r.findAllMatchIn(molecule).size - "Y".r.findAllMatchIn(molecule).size*2 - 1
+
+  }
+
+  object day20 {
+    val input = 36000000
+    val sum = input / 10
+
+    def factors(n:Int):List[Int] = {
+        def divides(d:Int, n:Int) = (n % d) == 0
+        def ld(n:Int):Int =  ldf(2, n)
+        def ldf(k:Int, n:Int):Int = {
+          if (divides(k, n)) k
+          else if ((k*k) > n) n
+          else ldf((k+1), n)
+        }
+        n match {
+          case 1 => Nil
+          case _ => val p = ld(n); p :: factors(n / p)
+        }
+      }
+
+    def presents(n: Int) = {
+      val combs = factors(n)
+      (1 to combs.size).flatMap(combs.combinations).map(_.product).sum + 1
+    }
+
+    def part1 = Stream.from(2).map(n => (n, presents(n))).filter(_._2 >= sum).head._1
+
+    val sum2 = input / 11
+
+    def presents2(n: Int) = {
+      val combs = factors(n)
+      (1 to combs.size).flatMap(combs.combinations).map(_.product).filter(n / _ <= 50).sum + 1
+    }
+
+    def part2 = Stream.from(2).map(n => (n, presents2(n))).filter(_._2 >= sum2).head._1
+
+  }
+
 
   def main(args: Array[String]) {
-    println(day16.part1)
-    println(day16.part2)
+    println(day20.part1)
+    println(day20.part2)
   }
 }
