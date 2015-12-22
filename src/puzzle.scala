@@ -393,9 +393,60 @@ object puzzle {
 
   }
 
+  object day21 {
+    val boss = (109, 8, 2)
+
+    case class Item(name: String, cost: Int, damage: Int, armor: Int)
+
+    val weapons = Seq(
+      Item("Dagger", 8, 4, 0),
+      Item("Shortsword", 10, 5, 0),
+      Item("Warhammer", 25, 6, 0),
+      Item("Longsword", 40, 7, 0),
+      Item("Greataxe", 74, 8, 0)
+    )
+
+    val armors = Seq(
+      Item("Leather", 13, 0, 1),
+      Item("Chainmail", 31, 0, 2),
+      Item("Splintmail", 53, 0, 3),
+      Item("Bandedmail", 75, 0, 4),
+      Item("Platemail", 102, 0, 5)
+    )
+
+    val rings = Seq(
+      Item("Damage +1", 25, 1, 0),
+      Item("Damage +2", 50, 2, 0),
+      Item("Damage +3", 100, 3, 0),
+      Item("Defense +1", 20, 0, 1),
+      Item("Defense +2", 40, 0, 2),
+      Item("Defense +3", 80, 0, 3)
+    )
+
+    val weaponry = for {
+      boughtWeapon <- weapons
+      boughtArmors <- (0 to 1).flatMap(armors.combinations)
+      boughtRings  <- (0 to 2).flatMap(rings.combinations)
+    } yield Seq(boughtWeapon) ++ boughtArmors ++ boughtRings
+
+    def playerWins(effect: Seq[Int]) =
+      Iterator.from(1)
+        .map(n => (boss._1 - n*(effect(0) - boss._3), 100 - n*(boss._2 - effect(1))))
+        .filter(p => p._1 <= 0 || p._2 <= 0).toSeq
+        .head._1 <= 0
+
+    def part1 = weaponry
+      .map(items => (items.map(_.cost).sum, items.map(item => List(item.damage, item.armor)).transpose.map(_.sum)))
+      .filter(p => playerWins(p._2)).minBy(_._1)
+
+    def part2 = weaponry
+      .map(items => (items.map(_.cost).sum, items.map(item => List(item.damage, item.armor)).transpose.map(_.sum)))
+      .filter(p => !playerWins(p._2)).maxBy(_._1)
+
+  }
 
   def main(args: Array[String]) {
-    println(day20.part1)
-    println(day20.part2)
+    println(day21.part1)
+    println(day21.part2)
   }
 }
