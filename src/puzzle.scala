@@ -430,18 +430,23 @@ object puzzle {
     } yield Seq(boughtWeapon) ++ boughtArmors ++ boughtRings
 
     def playerWins(effect: Seq[Int]) =
-      Iterator.from(1)
-        .map(n => (boss._1 - n*(effect(0) - boss._3), 100 - n*(boss._2 - effect(1))))
-        .filter(p => p._1 <= 0 || p._2 <= 0).toSeq
-        .head._1 <= 0
+      boss._1 / math.max(1, effect(0) - boss._3) <= 100 / math.max(1, boss._2 - effect(1))
 
     def part1 = weaponry
-      .map(items => (items.map(_.cost).sum, items.map(item => List(item.damage, item.armor)).transpose.map(_.sum)))
-      .filter(p => playerWins(p._2)).minBy(_._1)
+      .map(items => (
+        items.map(_.cost).sum,
+        items.map(item => List(item.damage, item.armor)).transpose.map(_.sum))
+      )
+      .filter(p => playerWins(p._2))
+      .minBy(_._1)
 
     def part2 = weaponry
-      .map(items => (items.map(_.cost).sum, items.map(item => List(item.damage, item.armor)).transpose.map(_.sum)))
-      .filter(p => !playerWins(p._2)).maxBy(_._1)
+      .map(items => (
+        items.map(_.cost).sum,
+        items.map(item => List(item.damage, item.armor)).transpose.map(_.sum))
+      )
+      .filter(p => !playerWins(p._2))
+      .maxBy(_._1)
 
   }
 
