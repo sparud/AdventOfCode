@@ -456,7 +456,7 @@ object puzzle {
     def eval(i: Int, registers: Map[String, Long]): Map[String, Long] =
       if (i >= input.size)
         registers
-      else {/*println(i, input(i), regs); */input(i) match {
+      else input(i) match {
         case Array("hlf", r)    => eval(i+1, registers + (r -> (registers(r) / 2L)))
         case Array("tpl", r)    => eval(i+1, registers + (r -> (registers(r) * 3L)))
         case Array("inc", r)    => eval(i+1, registers + (r -> (registers(r) + 1L)))
@@ -464,7 +464,7 @@ object puzzle {
         case Array("jie", r, s) => eval(i + (if (registers(r) % 2 == 0) s.toInt else 1), registers)
         case Array("jio", r, s) => eval(i + (if (registers(r) == 1) s.toInt else 1), registers)
         case s                  => throw new Exception(s"Illegal instruction: $s")
-      }}
+      }
 
       def part1 = eval(0, Map[String, Long]("a" -> 0L, "b" -> 0L))("b")
 
