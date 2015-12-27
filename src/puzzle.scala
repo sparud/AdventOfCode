@@ -539,7 +539,7 @@ object puzzle {
     val multiplier = 252533l
     val divisor = 33554393l
 
-    var repeats = (1 to row + col - 2).foldLeft(1)(_ + _) + col - 1
+    val repeats = (1 to row + col - 2).foldLeft(1)(_ + _) + col - 1
 
     def part1 = (2 to repeats).foldLeft(start){ case (prev, n) => prev * multiplier % divisor }
 
@@ -547,7 +547,7 @@ object puzzle {
   }
 
   def main(args: Array[String]) {
-    println(day22.part1)
-    println(day22.part2)
+    println(day25.part1)
+    println(day25.part2)
   }
 }
