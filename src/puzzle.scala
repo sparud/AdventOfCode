@@ -450,6 +450,47 @@ object puzzle {
 
   }
 
+  object day22 {
+    val bossDamage = 10
+
+    case class State(myHitPoints: Int, myMana: Int, bossHitPoints: Int, penalty: Int = 0, spent: Int = 0,
+                     shield: Int = 0, poison: Int = 0, recharge: Int = 0) {
+      def next(best: Int) =
+        if (spent >= best) Nil else List(
+          spend(53,  copy(bossHitPoints = bossHitPoints - 4)),
+          spend(73,  copy(bossHitPoints = bossHitPoints - 2, myHitPoints = myHitPoints + 2)),
+          spend(113, copy(shield = 6), shield == 0),
+          spend(173, copy(poison = 6), poison == 0),
+          spend(229, copy(recharge = 5), recharge == 0)
+        ).flatten.map(_.applyRules.copy(myHitPoints = myHitPoints - penalty))
+
+      def spend(mana: Int, state: => State, cond: => Boolean = true) =
+        if (mana <= myMana && cond) Some(state.copy(myMana = myMana - mana, spent = spent + mana)) else None
+
+      def playBoss = copy(myHitPoints = myHitPoints - math.max(1, bossDamage - (if (shield > 0) 7 else 0))).applyRules
+      def bossLost = bossHitPoints <= 0
+      def alive = myHitPoints > 0
+
+      def applyShield = if (shield > 0) copy(shield = shield - 1) else this
+      def applyPoison = if (poison > 0) copy(bossHitPoints = bossHitPoints - 3, poison = poison - 1) else this
+      def applyRecharge = if (recharge > 0) copy(myMana = myMana + 101, recharge = recharge - 1) else this
+
+      def applyRules = applyShield.applyPoison.applyRecharge
+    }
+
+    def play(best: Int, state: State): Int = {
+      val (won, afterMe) = state.next(best).partition(_.bossLost)
+      val (won2, afterBoss) = afterMe.map(_.playBoss).partition(_.bossLost)
+      val newBest = (won ++ won2).map(_.spent).foldLeft(best)(_ min _)
+      afterBoss.filter(_.alive).foldLeft(newBest)(play)
+    }
+
+    def part1 = play(Int.MaxValue, State(50, 500, 71))
+
+    def part2 = play(Int.MaxValue, State(50, 500, 71, penalty = 1))
+
+  }
+
   object day23 {
     val input = Source.fromFile("data/23.data").getLines().toVector.map(_.split("[ ,]+"))
 
@@ -471,8 +512,42 @@ object puzzle {
       def part2 = eval(0, Map[String, Long]("a" -> 1L, "b" -> 0L))("b")
   }
 
+  object day24 {
+    val input = Source.fromFile("data/24.data").getLines().toList.map(_.toLong)
+    val total = input.sum
+
+    def balanced(parts: Int)(l: List[Long]) = Iterator.from(1).exists(n => (input.toSet -- l).toList.combinations(n).exists(_.sum == total/parts))
+
+    def smallest(parts: Int) = Iterator.from(1)
+      .map(input.combinations)
+      .map(_.filter(_.sum == input.sum / parts))
+      .filter(_.nonEmpty)
+      .next()
+      .filter(balanced(parts))
+      .map(l => (l.product, l))
+      .minBy(_._1)
+
+    def part1 = smallest(3)
+
+    def part2 = smallest(4)
+  }
+
+  object day25 {
+    val row = 3010
+    val col = 3019
+    val start = 20151125l
+    val multiplier = 252533l
+    val divisor = 33554393l
+
+    var repeats = (1 to row + col - 2).foldLeft(1)(_ + _) + col - 1
+
+    def part1 = (2 to repeats).foldLeft(start){ case (prev, n) => prev * multiplier % divisor }
+
+    def part2 = ??? // It's the right answer, believe it or not...
+  }
+
   def main(args: Array[String]) {
-    println(day23.part1)
-    println(day23.part2)
+    println(day22.part1)
+    println(day22.part2)
   }
 }
