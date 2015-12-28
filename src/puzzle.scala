@@ -91,7 +91,7 @@ object puzzle {
       val state = new Array[Int](1000*1000)
       input.foreach {
         case parser(cmd, x0, y0, x1, y1) =>
-          (x0.toInt to x1.toInt).map(x => (y0.toInt to y1.toInt).map(y => (x, y))).flatten.foreach(operation(state, cmd, _))
+          (x0.toInt to x1.toInt).flatMap(x => (y0.toInt to y1.toInt).map(y => (x, y))).foreach(operation(state, cmd, _))
       }
       state.sum
     }
@@ -216,13 +216,13 @@ object puzzle {
 
     val persons = gains.keys.map(_._1).toList.distinct
 
-    val part1 = persons.permutations.map(l => l(l.length-1) :: l).map(_.sliding(2).map{
+    val part1 = persons.permutations.map(l => l.last :: l).map(_.sliding(2).map{
       case List(a, b) => gains((a, b)) + gains((b, a))
     }.sum).max
 
     val gainsB = gains ++ persons.flatMap(p => Seq((p, "Me") -> 0, ("Me", p) -> 0))
 
-    val part2 = ("Me" :: persons).permutations.map(l => l(l.length-1) :: l).map(_.sliding(2).map{
+    val part2 = ("Me" :: persons).permutations.map(l => l.last :: l).map(_.sliding(2).map{
       case List(a, b) => gainsB((a, b)) + gainsB((b, a))
     }.sum).max
   }
@@ -338,9 +338,9 @@ object puzzle {
         case (false, n) => n == 3
       }})
 
-    def part1 = (1 to size).foldLeft(state){ case (s, n) => next(s, false) }.map(_.count(identity)).sum
+    def part1 = (1 to size).foldLeft(state){ case (s, n) => next(s, stuck=false) }.map(_.count(identity)).sum
 
-    def part2 = (1 to size).foldLeft(state){ case (s, n) => next(s, true) }.map(_.count(identity)).sum
+    def part2 = (1 to size).foldLeft(state){ case (s, n) => next(s, stuck=true) }.map(_.count(identity)).sum
   }
 
   object day19 {
@@ -367,7 +367,7 @@ object puzzle {
         def ldf(k:Int, n:Int):Int = {
           if (divides(k, n)) k
           else if ((k*k) > n) n
-          else ldf((k+1), n)
+          else ldf(k+1, n)
         }
         n match {
           case 1 => Nil
@@ -430,7 +430,7 @@ object puzzle {
     } yield Seq(boughtWeapon) ++ boughtArmors ++ boughtRings
 
     def playerWins(effect: Seq[Int]) =
-      boss._1 / math.max(1, effect(0) - boss._3) <= 100 / math.max(1, boss._2 - effect(1))
+      boss._1 / math.max(1, effect.head - boss._3) <= 100 / math.max(1, boss._2 - effect(1))
 
     def part1 = weaponry
       .map(items => (
@@ -543,7 +543,7 @@ object puzzle {
 
     def part1 = (2 to repeats).foldLeft(start){ case (prev, n) => prev * multiplier % divisor }
 
-    def part2 = ??? // It's the right answer, believe it or not...
+    //def part2 = ??? // No part two
   }
 
   def main(args: Array[String]) {
