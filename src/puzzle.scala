@@ -488,7 +488,6 @@ object puzzle {
     def part1 = play(Int.MaxValue, State(50, 500, 71))
 
     def part2 = play(Int.MaxValue, State(50, 500, 71, penalty = 1))
-
   }
 
   object day23 {
