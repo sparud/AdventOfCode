@@ -516,7 +516,8 @@ object puzzle {
     val input = Source.fromFile("data/24.data").getLines().toList.map(_.toLong)
     val total = input.sum
 
-    def balanced(parts: Int)(l: List[Long]) = Iterator.from(1).exists(n => (input.toSet -- l).toList.combinations(n).exists(_.sum == total/parts))
+    def balanced(parts: Int)(l: List[Long]) =
+      Iterator.from(1).exists(n => (input.toSet -- l).toList.combinations(n).exists(_.sum == total/parts))
 
     def smallest(parts: Int) = Iterator.from(1)
       .map(input.combinations)
@@ -524,8 +525,8 @@ object puzzle {
       .filter(_.nonEmpty)
       .next()
       .filter(balanced(parts))
-      .map(l => (l.product, l))
-      .minBy(_._1)
+      .map(_.product)
+      .min
 
     def part1 = smallest(3)
 
@@ -547,7 +548,7 @@ object puzzle {
   }
 
   def main(args: Array[String]) {
-    println(day25.part1)
-    println(day25.part2)
+    println(day24.part1)
+    println(day24.part2)
   }
 }
