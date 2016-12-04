@@ -85,5 +85,4 @@ object aoc2016 {
     println(day4.part1)
     println(day4.part2)
   }
-
 }
