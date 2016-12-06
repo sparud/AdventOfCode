@@ -1,3 +1,6 @@
+import java.security.MessageDigest
+import javax.xml.bind.DatatypeConverter._
+
 import scala.io.Source
 
 object aoc2016 {
@@ -76,13 +79,36 @@ object aoc2016 {
 
     def repeat[A](n: Int, a: A, f: A => A) = (a /: (1 to n)) { case (b, _) => f(b) }
 
-    def decode(tuple: (String, Int, String)) = repeat(tuple._2, tuple._1,  {s: String => s.map(transform)})
+    def decode(tuple: (String, Int, String)) = repeat(tuple._2 % 26, tuple._1,  {s: String => s.map(transform)})
 
     val part2 = input.map(tuple => (tuple._2, decode(tuple))).find(_._2 == "northpoleobjectstorage").map(_._1).get
   }
 
+  object day5 {
+    val doorId = "reyedfim"
+
+    def md5(s: String) = printHexBinary(MessageDigest.getInstance("MD5").digest(s.getBytes))
+
+    val part1 = Stream.from(0).map(n => md5(doorId + n)).filter(_.startsWith("00000")).take(8).map(_(5)).mkString
+
+    val part2 = Stream.from(0).map(n => md5(doorId + n))
+      .filter(h => h.startsWith("00000") && h(5) >= '0' && h(5) <= '7').scanLeft(List[(Char, Char)]()){
+      case (state, hash) => if (state.map(_._1).contains(hash(5))) state else (hash(5), hash(6)) :: state
+    }.find(_.size == 8).get.sorted.map(_._2).mkString
+  }
+
+
+  object day6 {
+    val part1 = Source.fromFile("data2016/6")
+      .getLines.toSeq.transpose.map(_.groupBy(identity).mapValues(_.size).map(_.swap).toSeq.sorted.last._2).mkString
+
+    val part2 = Source.fromFile("data2016/6")
+      .getLines.toSeq.transpose.map(_.groupBy(identity).mapValues(_.size).map(_.swap).toSeq.sorted.head._2).mkString
+
+  }
+
   def main(args: Array[String]) {
-    println(day4.part1)
-    println(day4.part2)
+    println(day6.part1)
+    println(day6.part2)
   }
 }
