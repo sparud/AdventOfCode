@@ -107,8 +107,72 @@ object aoc2016 {
 
   }
 
+  object day7 {
+    def parse(s: String) = s.split("\\[|\\]").toList
+
+    val input = Source.fromFile("data2016/7").getLines.map(parse).toList.map(_.map(_.toList))
+
+    def everyother[T](isLeft: Boolean)(s: List[T]): (List[T], List[T]) = s match {
+      case Nil => (List[T](), List[T]())
+      case c :: rest =>
+        val (left, right) = everyother(!isLeft)(rest)
+        if (isLeft) (c :: left, right) else (left, c:: right)
+    }
+
+    def abba(s: List[Char]): Boolean = s match {
+      case a :: b :: c :: d :: rest => a == d && b == c && a != b || abba(b :: c :: d :: rest)
+      case _ => false
+    }
+
+    val part1 = input.map(everyother(isLeft=true)).count{ case (musts, mustnots) => musts.exists(abba) && !mustnots.exists(abba) }
+
+    def aba(s: List[Char]) = s.sliding(3).flatMap { case l@(a :: b :: c :: Nil) => if (a == c && a != b) Some(l) else None }
+    def aba2bab(s: String) = "" + s(1) + s(0) + s(1)
+    def abasSet(parts: List[List[Char]]) = parts.flatMap(aba).map(_.mkString).toSet
+
+    val part2 = input.map(everyother(isLeft=true)).count{ case (outer, inner) =>
+      abasSet(outer).intersect(abasSet(inner).map(aba2bab)).nonEmpty
+    }
+
+  }
+
+  object day8 {
+    val input = Source.fromFile("data2016/8").getLines.toList
+    val ROWS = 6
+    val COLUMNS = 50
+
+    val state = Array.fill(ROWS, COLUMNS)(false)
+
+    def rotate[T](list: List[T]) = list.last :: list.slice(0, list.size-1)
+    def repeat[T](n: Int, f: T => T, start: T) = (start /: (1 to n)){case p  => f(p._1)}
+
+    input.foreach(_.split(" ") match {
+      case Array("rotate", "column", xeq, "by", nval) =>
+        val col = xeq.split("=").last.toInt
+        val n = nval.toInt
+        repeat(n, rotate[Boolean], (0 until ROWS).map(row => state(row)(col)).toList).zip(0 until ROWS).foreach { case (v, row) =>
+          state(row)(col) = v
+        }
+      case Array("rotate", "row", yeq, "by", nval) =>
+        val row = yeq.split("=").last.toInt
+        val n = nval.toInt
+        repeat(n, rotate[Boolean], state(row).toList).zip(0 until COLUMNS).foreach { case (v, col) =>
+          state(row)(col) = v
+        }
+      case Array("rect", colsbyrows) =>
+        val Array(cols, rows) = colsbyrows.split("x")
+        (0 until rows.toInt).foreach(row => (0 until cols.toInt).foreach(col => state(row)(col) = true))
+    })
+
+    val part1 = state.map(_.count(identity)).sum
+
+    // Part 2: look at the result of this:
+    println(state.map(_.map(v => Map(false -> '.', true -> '#')(v)).mkString).mkString("\n"))
+  }
+
+
   def main(args: Array[String]) {
-    println(day6.part1)
-    println(day6.part2)
+    println(day8.part1)
+    //println(day8.part2)
   }
 }
