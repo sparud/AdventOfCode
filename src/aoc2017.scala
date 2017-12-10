@@ -3,7 +3,7 @@ import aoc2016.day2.dirs
 import scala.collection.mutable
 import scala.io.Source
 import Stream._
-
+import scala.annotation.tailrec
 import scala.math.pow
 
 object aoc2017 {
@@ -66,16 +66,36 @@ object aoc2017 {
   }
 
   object day4 {
-    val input = Source.fromFile("data2017/4").getLines().toList
+    val input = Source.fromFile("data2017/4").getLines()
 
-    val part1 = input.count(_.split(" ").groupBy(identity).forall(_._2.length == 1))
+    val phrases = input.map(_.split(" ")).toList
 
-    val part2 = input.count(_.split(" ").map(_.sorted).groupBy(identity).forall(_._2.length == 1))
+    val part1 = phrases.count(_.groupBy(identity).forall(_._2.length == 1))
 
+    val part2 = phrases.count(_.map(_.sorted).groupBy(identity).forall(_._2.length == 1))
+  }
+
+  object day5 {
+    val input = Source.fromFile("data2017/5").getLines().map(Integer.parseInt).toArray
+
+    def step1(offset: Int, input: Array[Int], steps: Int = 0): Int = {
+      val newOffset = offset + input(offset)
+      input(offset) += 1
+      if (newOffset < 0 || newOffset >= input.length) steps+1 else step1(newOffset, input, steps+1)
+    }
+
+    def step2(offset: Int, input: Array[Int], steps: Int = 0): Int = {
+      val newOffset = offset + input(offset)
+      input(offset) += (if (input(offset) >= 3) -1 else 1)
+      if (newOffset < 0 || newOffset >= input.length) steps+1 else step2(newOffset, input, steps+1)
+    }
+
+    val part1 = step1(0, input)
+    val part2 = step2(0, input)
   }
 
   def main(args: Array[String]) {
-    println(day4.part1)
-    println(day4.part2)
+    println(day5.part2)
+   // println(day4.part2)
   }
 }
