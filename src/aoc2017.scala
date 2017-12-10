@@ -65,9 +65,17 @@ object aoc2017 {
     val part2 = sumMaps.map(_.values.max).find(_ > input).get
   }
 
+  object day4 {
+    val input = Source.fromFile("data2017/4").getLines().toList
+
+    val part1 = input.count(_.split(" ").groupBy(identity).forall(_._2.length == 1))
+
+    val part2 = input.count(_.split(" ").map(_.sorted).groupBy(identity).forall(_._2.length == 1))
+
+  }
 
   def main(args: Array[String]) {
-    println(day3.part1)
-    println(day3.part2)
+    println(day4.part1)
+    println(day4.part2)
   }
 }
