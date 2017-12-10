@@ -1,7 +1,9 @@
 import java.security.MessageDigest
 import javax.xml.bind.DatatypeConverter._
 
+import scala.collection.mutable
 import scala.io.Source
+import Stream._
 
 object aoc2016 {
   object day1 {
@@ -170,9 +172,111 @@ object aoc2016 {
     println(state.map(_.map(v => Map(false -> '.', true -> '#')(v)).mkString).mkString("\n"))
   }
 
+  object day11 {
+    val subjects = List("strontium", "plutonium", "thulium", "ruthenium", "curium")
+    val FLOORS = 4
+
+    case class Floor(chips: Set[Char] = Set(), generators: Set[Char] = Set()) {
+      def ok      = (chips -- generators).isEmpty || (generators -- chips).isEmpty
+      def isEmpty = chips.isEmpty && generators.isEmpty
+      def moves   = {
+        val chipsMoves = List() :: chips.map(List(_)).toList ++ chips.toList.combinations(2)
+        val generatorMoves = List() :: generators.map(List(_)).toList ++ generators.toList.combinations(2)
+        chipsMoves.flatMap(cs => generatorMoves.flatMap{gs =>
+          val len = cs.size + gs.size
+          if (len > 0 && len <= 2) Some(Floor(cs.toSet, gs.toSet)) else None
+        })
+      }
+      def +(other: Floor) = Floor(chips ++ other.chips, generators ++ other.generators)
+      def -(other: Floor) = Floor(chips -- other.chips, generators -- other.generators)
+      override def toString = chips.toList.sorted.mkString + ":" + generators.toList.sorted.mkString
+    }
+
+    case class State(elevator: Int, floors: List[Floor]) {
+      def id    = elevator.toString + floors.map(_.toString).mkString
+      def ok    = floors.forall(_.ok)
+      def done  = floors.tail.forall(_.isEmpty)
+      def moves = Stream(elevator + 1, elevator -1)
+        .filter(f => f >=0 && f < FLOORS)
+        .flatMap(f => floors(elevator).moves.map(move =>
+          replaceFloor(elevator, floors(elevator) - move).replaceFloor(f, floors(f) + move).elevateTo(f)))
+        .filter(_.ok)
+
+      def replaceFloor(n: Int, floor: Floor) =
+        State(elevator, floors.zip(0 until FLOORS).map{ case (f, i) => if (i == n) floor else f })
+      def elevateTo(n: Int) = State(n, floors)
+      override def toString = s"$elevator#${floors.map(_.toString).mkString(",")}"
+    }
+
+    var visited = mutable.Set[String]()
+    def unseenState(state: State) = {
+      val id = state.toString
+      !visited.contains(id) && visited.add(id)
+    }
+
+    def path(distance: Int)(states: Stream[State]): Stream[(State, Int)] = {
+      val next = states.filter(unseenState)
+      println(distance)
+      //next.foreach(println)
+      next.map((_, distance + 1)).map{x => println(x); x} ++ path(distance + 1)(next.flatMap(_.moves))
+    }
+
+    def neighborsWithHistory(state: State): Stream[State] =
+      state.moves
+
+
+    def newNeighborsOnly(neighbors: Stream[State], explored: Set[State]): Stream[State] =
+        neighbors.filter(!explored.contains(_))
+
+    def from(distance: Int,
+             initial: Stream[State],
+             explored: Set[State]): Stream[(State, Int)] = {
+      val neighbors = for {
+        state <- initial
+        neighbor <- neighborsWithHistory(state)
+      } yield neighbor
+      val newNeighbors = newNeighborsOnly(neighbors, explored)
+      //println(s"New :${newNeighbors.toList}")
+      newNeighbors.map((_, distance)) ++ (
+        if (newNeighbors.isEmpty)
+          Stream.empty
+        else
+          from(distance+1, newNeighbors, explored ++ newNeighbors))
+    }
+
+
+
+    val initialState1 = State(3, List(
+      Floor(),
+      Floor(chips = Set('t')),
+      Floor(chips = Set('r', 'c'), generators = Set('t', 'r', 'c')),
+      Floor(chips = Set('s', 'p'), generators = Set('s', 'p'))
+    ))
+
+    val initialState = State(3, List(
+      Floor(),
+      Floor(generators = Set('l')),
+      Floor(generators = Set('h')),
+      Floor(chips = Set('l', 'h'))
+    ))
+
+    lazy val pathsFromStart: Stream[(State, Int)] =
+        from(0, Stream(initialState), Set(initialState))
+
+    lazy val pathsToGoal: Stream[(State, Int)] = {
+      pathsFromStart.filter{case (state, distance) => state.done}
+    }
+
+    lazy val solution = pathsToGoal.headOption match {
+      case None => ???
+      case Some((state, distance)) => (state, distance)
+    }
+
+    val part1 = solution // path(0)(Stream(initialState)) // .filter(_._1.done).head._2
+  }
 
   def main(args: Array[String]) {
-    println(day8.part1)
+    println(day11.part1 /*.take(1).map(_.toString).mkString("\n")*/)
     //println(day8.part2)
   }
 }

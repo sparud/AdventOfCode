@@ -29,10 +29,10 @@ object aoc2017 {
   object day3 {
     val input = 277678
 
-    def findDistance(n: Int, layer: Int = 1, acc: Int = 1): (Int, Int) =
-      if (acc >= n) (n, Math.abs(((acc-n)%(layer*4)-layer+1)%layer) + layer - 1) else findDistance(n, layer+1, acc + layer*8)
+    def distance(n: Int, layer: Int = 1, acc: Int = 1): Int =
+      if (acc >= n) Math.abs(((acc-n)%(layer*4)-layer+1)%layer) + layer - 1 else distance(n, layer+1, acc + layer*8)
 
-    val part1 = findDistance(input)
+    val part1 = distance(input)
 
     case class Pos(x: Int, y: Int) {
       def +(other: Pos) = Pos(x+other.x, y+other.y)
@@ -67,7 +67,7 @@ object aoc2017 {
 
 
   def main(args: Array[String]) {
-    println(day3.part1x)
+    println(day3.part1)
     println(day3.part2)
   }
 }
