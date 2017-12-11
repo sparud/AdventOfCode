@@ -94,8 +94,89 @@ object aoc2017 {
     val part2 = step2(0, input)
   }
 
+  object day6 {
+    val input = Source.fromFile("data2017/6").getLines().toList.head.split("\\t").map(Integer.parseInt)
+
+    def distribute1(banks: Array[Int], steps: Int = 0, seen: Set[Seq[Int]] = Set()): Int = {
+      val (max, ix) = banks.zipWithIndex.foldLeft((-1, -1)) {
+        case (best@(bestCount, bestIx), bank@(bankCount, bankIx)) => if (bankCount > bestCount) bank else best
+      }
+      val newBanks = banks.clone()
+      newBanks(ix) -= max
+      (ix+1 until ix+max+1).foreach{ i => newBanks(i % newBanks.length) += 1 }
+      if (seen.contains(newBanks))
+        steps+1
+      else
+        distribute1(newBanks, steps+1, seen + newBanks)
+    }
+
+    @tailrec
+    def distribute2(banks: Array[Int], steps: Int = 0, seen: Map[Seq[Int], Int] = Map()): Int = {
+      val (max, ix) = banks.zipWithIndex.foldLeft((-1, -1)) {
+        case (best@(bestCount, bestIx), bank@(bankCount, bankIx)) => if (bankCount > bestCount) bank else best
+      }
+      val newBanks = banks.clone()
+      newBanks(ix) -= max
+      (ix+1 until ix+max+1).foreach{ i => newBanks(i % newBanks.length) += 1 }
+      val seenBefore = seen.get(newBanks)
+      if (seenBefore.nonEmpty)
+        steps - seenBefore.get
+      else
+        distribute2(newBanks, steps+1, seen + (newBanks.toSeq -> steps))
+
+      // Would like to replace last four lines above with the below line, but it's not tail recursive...
+      // seen.get(newBanks).map(steps - _).getOrElse(distribute2(newBanks, steps+1, seen + (newBanks.toSeq -> steps)))
+    }
+
+    //val part1 = distribute1(input)
+    val part2 = distribute2(input)
+
+  }
+
+  object day7 {
+    val input = Source.fromFile("data2017/7").getLines().toList
+
+    val p = """(\w+) \((\d+)\)""".r
+
+    def parse(line: String) = {
+      val parts = line.split(" -> ")
+      parts.head match {
+        case p(name, weight) => Disc(name, weight.toInt, if (parts.length > 1) parts(1).split(", ").toList else Nil)
+      }
+    }
+
+    case class Disc(name: String, weight: Int, above: Iterable[String])
+
+    val discs = input.map(parse)
+
+    val part1 = (discs.map(_.name).toSet -- discs.flatMap(_.above).toSet).head
+
+    val discMap = discs.map(disc => disc.name -> disc).toMap
+
+    def aboveWeights(disc: Disc) = disc.above.map(discMap).map(weight).sum
+    def weight(disc: Disc): Int = disc.weight + aboveWeights(disc)
+
+    def findFaulty(disc: Disc, diff: Int): Option[Int] = {
+      checkBalance(disc).orElse(Some(disc.weight + diff))
+    }
+
+    def checkBalance(disc: Disc): Option[Int] = {
+      val discsAbove = disc.above.map(discMap)
+      val weights = discsAbove.map(weight)
+      if (weights.nonEmpty && weights.min != weights.max) {
+        val groups = discsAbove.zip(weights).groupBy(_._2).values
+        val bad = groups.filter(_.size == 1).head.head
+        val oneGood = groups.filter(_.size > 1).head.head
+        findFaulty(bad._1, oneGood._2 - bad._2)
+      } else
+        None
+    }
+
+    val part2 = discs.flatMap(checkBalance).head
+  }
+
   def main(args: Array[String]) {
-    println(day5.part2)
+    println(day7.part2)
    // println(day4.part2)
   }
 }
