@@ -175,8 +175,38 @@ object aoc2017 {
     val part2 = discs.flatMap(checkBalance).head
   }
 
+  object day8 {
+    val input = Source.fromFile("data2017/8").getLines().toList
+
+    case class Instruction(name: String, increment: Int, condVar: String, cond: (Int, Int)=>Boolean, condValue: Int) {
+      def evaluate(bindings: Map[String, Int]) =
+        if (cond(bindings(condVar), condValue)) bindings + (name -> (bindings(name) + increment)) else bindings
+    }
+
+    val p = """(\w+) (\w+) (-?\d+) if (\w+) ([^ ]+) (-?\d+)""".r
+
+    val ops = Map[String, (Int, Int) => Boolean](
+      "!=" -> (_ != _), ">" -> (_ > _), "<" -> (_ < _), "==" -> (_ == _), "<=" -> (_ <= _), ">=" -> (_ >= _)
+    )
+
+    def parse(line: String) = line match {
+      case p(name, op, value, condVar, cond, condValue) =>
+        Instruction(name, (if (op=="inc") 1 else -1)*value.toInt, condVar, ops(cond), condValue.toInt)
+    }
+
+    val instructions = input.map(parse)
+
+    val part1 = instructions.foldLeft(Map[String, Int]().withDefaultValue(0)){ case (bindings, instruction) =>
+      instruction.evaluate(bindings)
+    }.values.max
+
+    val part2 = instructions.scanLeft(Map[String, Int]().withDefaultValue(0)){ case (bindings, instruction) =>
+      instruction.evaluate(bindings)
+    }.filter(_.nonEmpty).map(_.values.max).max
+  }
+
   def main(args: Array[String]) {
-    println(day7.part2)
+    println(day8.part2)
    // println(day4.part2)
   }
 }
