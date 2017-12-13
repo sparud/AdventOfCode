@@ -3,7 +3,7 @@ import scala.io.Source
 import Stream._
 import scala.annotation.tailrec
 import scala.util.parsing.combinator._
-
+import Math._
 
 object aoc2017 {
   object day1 {
@@ -220,7 +220,7 @@ object aoc2017 {
     val part2 = parse(nonCancelled, input)
   }
 
-  object day10 extends JavaTokenParsers {
+  object day10 {
     val input =  Source.fromFile("data2017/10").mkString
 
     val state = input.split(",").map(_.toInt).foldLeft((0, 0, (0 to 255).toArray)){ case ((skip, pos, state), move) =>
@@ -243,8 +243,28 @@ object aoc2017 {
     val part2 = finalState.grouped(16).map(_.reduce(_ ^ _)).map(h => f"$h%02x").mkString
   }
 
+
+  object day11 {
+    val input = Source.fromFile("data2017/11").mkString
+    case class Pos(x: Int, y: Int) {
+      def +(other: Pos) = Pos(x+other.x, y+other.y)
+    }
+
+    def distance(p: Pos) =
+      if (signum(p.x) != signum(p.y)) max(abs(p.x), abs(p.y)) else abs(p.x+p.y)
+
+    def directions =
+      Map("n"->Pos(0, 1), "ne"->Pos(1, 0), "se"->Pos(1, -1), "s"->Pos(0, -1), "sw"->Pos(-1, 0), "nw"->Pos(-1, 1))
+
+    val part1 = distance(input.split(",").map(directions).foldLeft(Pos(0, 0))(_ + _))
+
+    val part2 = input.split(",").map(directions).scanLeft(Pos(0, 0))(_ + _).map(distance).max
+
+  }
+
   def main(args: Array[String]) {
-    println(day10.part2)
-   // println(day4.part2)
+    println(day11.part2)
+   // println(day4.part2
+
   }
 }
