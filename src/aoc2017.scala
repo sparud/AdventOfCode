@@ -1,10 +1,9 @@
-import aoc2016.day2.dirs
-
 import scala.collection.mutable
 import scala.io.Source
 import Stream._
 import scala.annotation.tailrec
-import scala.math.pow
+import scala.util.parsing.combinator._
+
 
 object aoc2017 {
   object day1 {
@@ -205,8 +204,24 @@ object aoc2017 {
     }.filter(_.nonEmpty).map(_.values.max).max
   }
 
+  object day9 extends JavaTokenParsers {
+    val input = Source.fromFile("data2017/9").mkString
+
+    def expr(score: Int): Parser[Int] =
+        "{" ~> repsep(expr(score+1), ",") <~ "}" ^^ (_.sum + score) |
+        "<" ~> ("!.".r | "[^>]".r).*      <~ ">" ^^ (_ => 0)
+
+    val part1 = parse(expr(1), input)
+
+    def nonCancelled: Parser[Int] =
+      "{" ~> repsep(nonCancelled, ",")            <~ "}" ^^ (_.sum) |
+      "<" ~> ("!.".r ^^ (_ => "") | "[^>]".r).*   <~ ">" ^^ (_.map(_.length).sum)
+
+    val part2 = parse(nonCancelled, input)
+  }
+
   def main(args: Array[String]) {
-    println(day8.part2)
+    println(day9.part2)
    // println(day4.part2)
   }
 }
