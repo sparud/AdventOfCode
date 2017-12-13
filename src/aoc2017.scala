@@ -263,8 +263,7 @@ object aoc2017 {
   }
 
   def main(args: Array[String]) {
+    println(day11.part1)
     println(day11.part2)
-   // println(day4.part2
-
   }
 }
