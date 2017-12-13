@@ -220,8 +220,31 @@ object aoc2017 {
     val part2 = parse(nonCancelled, input)
   }
 
+  object day10 extends JavaTokenParsers {
+    val input =  Source.fromFile("data2017/10").mkString
+
+    val state = input.split(",").map(_.toInt).foldLeft((0, 0, (0 to 255).toArray)){ case ((skip, pos, state), move) =>
+      val indices = (0 until move).map(ix => (ix + pos) % state.length)
+      indices.zip(indices.map(state).reverse).foreach{ case (ix, value) => state(ix) = value }
+      (skip+1, (pos + move + skip) % state.length, state)
+    }._3
+
+    val part1 = state(0) * state(1)
+
+    val steps = input.toList.map(_.toInt) ++ Array(17, 31, 73, 47, 23)
+    val finalState = (1 to 64).foldLeft((0, 0, (0 to 255).toArray)){
+      case ((skip, pos, state), _) => steps.foldLeft((skip, pos, state)){ case ((skip, pos, state), move) =>
+        val indices = (0 until move).map(ix => (ix + pos) % state.length)
+        indices.zip(indices.map(state).reverse).foreach{ case (ix, value) => state(ix) = value }
+        (skip+1, (pos + move + skip) % state.length, state)
+      }
+    }._3
+
+    val part2 = finalState.grouped(16).map(_.reduce(_ ^ _)).map(h => f"$h%02x").mkString
+  }
+
   def main(args: Array[String]) {
-    println(day9.part2)
+    println(day10.part2)
    // println(day4.part2)
   }
 }
