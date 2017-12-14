@@ -246,6 +246,7 @@ object aoc2017 {
 
   object day11 {
     val input = Source.fromFile("data2017/11").mkString
+
     case class Pos(x: Int, y: Int) {
       def +(other: Pos) = Pos(x+other.x, y+other.y)
     }
@@ -262,8 +263,32 @@ object aoc2017 {
 
   }
 
+  object day12 {
+    val input = Source.fromFile("data2017/12").getLines.toList
+
+    val graph = input.map(_.split(" <-> ") match {
+      case Array(name, connections) => name -> connections.split(", ").toList
+    }).toMap
+
+    def follow(name: String, seen: Set[String] = Set()): Set[String] =
+      if (seen.contains(name))
+        seen
+    else
+        graph(name).foldLeft(seen + name){ case (newSeen, link) => follow(link, newSeen)}
+
+    val part1 = follow("0").size
+
+    def groups(names: Set[String]): Int =
+      if (names.isEmpty)
+        0
+      else
+        1 + groups(names -- follow(names.head))
+
+    val part2 = groups(graph.keySet)
+  }
+
   def main(args: Array[String]) {
-    println(day11.part1)
-    println(day11.part2)
+    println(day12.part1)
+    println(day12.part2)
   }
 }
