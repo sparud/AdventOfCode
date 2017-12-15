@@ -273,7 +273,7 @@ object aoc2017 {
     def follow(name: String, seen: Set[String] = Set()): Set[String] =
       if (seen.contains(name))
         seen
-    else
+      else
         graph(name).foldLeft(seen + name){ case (newSeen, link) => follow(link, newSeen)}
 
     val part1 = follow("0").size
@@ -287,8 +287,31 @@ object aoc2017 {
     val part2 = groups(graph.keySet)
   }
 
+  object day13 {
+    val input = Source.fromFile("data2017/13").getLines.toList
+
+    val ranges =
+      input.map(_.split(": ") match { case Array(from, to) => from.toInt -> to.toInt }).toMap.withDefaultValue(0)
+
+    case class Scanner(range: Int, depth: Int) {
+      val positions = ((0 until range) ++ (1 until range-1).reverse).toArray
+      def current(time: Int) = if (range > 0) positions(time % positions.length) else -1
+      def hit(time: Int) = current(time) == 0
+      def severity(time: Int) = if (hit(time)) range*depth else 0
+    }
+
+    val layers = (0 to ranges.keys.max).toList
+
+    val part1 =
+      layers.foldLeft(0) { case (severity, layer) => severity + Scanner(ranges(layer), layer).severity(layer)}
+
+    val part2 = Stream.from(0).filter(delay =>
+      layers.foldLeft(true) { case (success, layer) => success && !Scanner(ranges(layer), layer).hit(layer + delay)}
+    ).head
+  }
+
   def main(args: Array[String]) {
-    println(day12.part1)
-    println(day12.part2)
+    println(day13.part1)
+    //println(day12.part2)
   }
 }
