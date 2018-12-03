@@ -13,7 +13,7 @@ object aoc2018 {
     val part1 = numbers.sum
 
     val part2 =
-      Stream.from(1).flatMap(_ => numbers)
+      Stream.continually(numbers).flatten
       .scanLeft(0)(_ + _)
       .scanLeft((None: Option[Int], Set[Int]())) {
         case ((r: Option[Int], s: Set[Int]), n: Int) =>
