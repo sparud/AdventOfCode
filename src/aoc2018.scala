@@ -30,16 +30,8 @@ object aoc2018 {
     val part1 = counts.map(c => Seq(c.exists(2 ==), c.exists(3 ==))).transpose.map(_.count(identity)).product
 
     def common(s1: String, s2: String) = {
-      def iterate(ix: Int, errors: Int, soFar: List[Char]): Option[String] =
-        if (errors > 1)
-          None
-        else if (ix == s1.length)
-          Some(soFar.reverse.mkString)
-        else if (s1(ix) == s2(ix))
-          iterate(ix+1, errors, s1(ix) :: soFar)
-        else
-          iterate(ix+1, errors+1, soFar)
-      iterate(ix=0, errors=0, soFar=Nil)
+      val equalParts = s1.zip(s2).filter{ case (c1, c2) => c1 == c2}
+      if (equalParts.size == s1.length-1) Some(equalParts.map(_._1).mkString) else None
     }
 
     def triangulate[A](values: List[A]): Stream[(A, A)] = values match {
