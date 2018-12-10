@@ -283,10 +283,8 @@ object aoc2018 {
 
     val (time, points) = minimizeHeight(startPoints)
 
-    val minY = points.minBy(_.y).y
-    val maxY = points.maxBy(_.y).y
-    val minX = points.minBy(_.x).x
-    val maxX = points.maxBy(_.x).x
+    val (minY, maxY) = (points.minBy(_.y).y, points.maxBy(_.y).y)
+    val (minX, maxX) = (points.minBy(_.x).x, points.maxBy(_.x).x)
     val height = maxY-minY
     val width = maxX-minX
 
