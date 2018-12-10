@@ -257,11 +257,49 @@ object aoc2018 {
     val part1 = play(410, 72059)
 
     val part2 = play(410, 72059*100)
+  }
 
+  object day10 {
+    val input = Source.fromFile("data2018/10").getLines.toList
+
+    val pattern = """position=<\s*(-?\d+),\s*(-?\d+)> velocity=<\s*(-?\d+),\s*(-?\d+)>""".r
+
+    case class Point(x: Int, y: Int, dx: Int, dy: Int) {
+      def step() = Point(x+dx, y+dy, dx, dy)
+    }
+
+    val startPoints = input.map {
+      case pattern(x, y, dx, dy) => Point(x.toInt, y.toInt, dx.toInt, dy.toInt)
+    }
+
+    def minimizeHeight(points: List[Point], time: Int = 0, oldHeight: Int = Int.MaxValue): (Int, List[Point]) = {
+      val next = points.map(_.step())
+      val height = next.maxBy(_.y).y - next.minBy(_.y).y
+      if (height > oldHeight)
+        (time, points)
+      else
+        minimizeHeight(next, time+1, height)
+    }
+
+    val (time, points) = minimizeHeight(startPoints)
+
+    val minY = points.minBy(_.y).y
+    val maxY = points.maxBy(_.y).y
+    val minX = points.minBy(_.x).x
+    val maxX = points.maxBy(_.x).x
+    val height = maxY-minY
+    val width = maxX-minX
+
+    val dots = points.map(p => (p.x-minX, p.y-minY)).toSet
+    (0 to height).foreach{y =>
+      (0 to width).foreach(x => print(if (dots.contains((x, y))) "#" else "."))
+      println()
+    }
+
+   val part2 = time
   }
 
   def main(args: Array[String]) {
-    println(day9.part1)
-    println(day9.part2)
+    println(day10.part2)
   }
 }
