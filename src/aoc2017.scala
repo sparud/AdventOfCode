@@ -2,9 +2,10 @@ import scala.collection.mutable
 import scala.io.Source
 import Stream._
 import scala.annotation.tailrec
-import scala.util.parsing.combinator._
+//import scala.util.parsing.combinator._
 import Math._
 
+/*
 object aoc2017 {
   object day1 {
     val input = Source.fromFile("data2017/1").mkString
@@ -315,3 +316,4 @@ object aoc2017 {
     //println(day12.part2)
   }
 }
+*/

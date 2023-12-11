@@ -1,9 +1,10 @@
 import java.security.MessageDigest
-import javax.xml.bind.DatatypeConverter._
+//import javax.xml.bind.DatatypeConverter._
 
 import scala.collection.mutable
 import scala.io.Source
-import Stream._
+//import Stream._
+/*
 
 object aoc2016 {
   object day1 {
@@ -280,3 +281,5 @@ object aoc2016 {
     //println(day8.part2)
   }
 }
+
+ */

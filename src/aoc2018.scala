@@ -3,8 +3,9 @@ import java.lang.Math._
 import scala.Stream._
 import scala.annotation.tailrec
 import scala.io.Source
-import scala.util.parsing.combinator._
+//import scala.util.parsing.combinator._
 
+/*
 object aoc2018 {
   object day1 {
     val input = Source.fromFile("data2018/1").getLines()
@@ -297,7 +298,141 @@ object aoc2018 {
    val part2 = time
   }
 
+  object day11 {
+    val serial = 18 // 7403
+
+    val SIZE = 4
+
+    def power(x: Int, y: Int) = ((x+10)*y+serial)*(x+10) / 100 % 10 - 5
+
+    //val grid = (1 to SIZE).map(x => (1 to SIZE).map(y => power(x, y)).toArray).toArray
+
+    val grid = (1 to SIZE).map(x => (1 to SIZE).map(y => (x-1)*SIZE+y-1).toArray).toArray
+    println("AAAA", grid(1)(0))
+
+    def squarePower(x: Int, y: Int, size: Int) = (x-1 to x+size-2).flatMap(sx => (y-1 to y+size-2).map(sy => grid(sx)(sy))).sum
+
+    def bySize(size: Int) =
+      (1 to SIZE-size+1)
+        .flatMap(x => (1 to SIZE-size+1)
+          .map(y => (squarePower(x, y, size), (x, y))))
+
+
+    def show(a: Array[Array[Int]]): Unit = {
+      for (y <- a(0).indices) {
+        for (x <- a.indices) {
+          print(s"${a(x)(y)} ")
+        }
+        println()
+      }
+      println()
+    }
+
+    def maximize(board: Array[Array[Int]], horiz: Array[Array[Int]], vert: Array[Array[Int]], size: Int = 2, max: (Int, (Int, Int, Int)) = (Int.MinValue, (0, 0, 0))): (Int, (Int, Int, Int)) =
+      if (size == 5)
+        max
+      else {
+        println(size)
+        var newMax = max
+
+        println(board.length, board(0).length, horiz.length, SIZE-size)
+        show(board)
+        println("horiz")
+        show(horiz)
+        println("vert")
+        show(vert)
+        val newBoard = (0 until board.length-1).map(x => (0 until board.length-1).map { y =>
+          ///println(horiz.length, y+size-1)
+          //println(x, y, board(x)(y), grid(x + size - 1)(y + size - 1), horiz(y+size-1)(x), vert(x+size-1)(y))
+          //if (x == 0)
+            println("SSS", size, x, y, board(x)(y), grid(x + size - 1)(y + size - 1), horiz(x)(y+1), vert(y)(x+1))
+          val power = board(x)(y) + grid(x + size - 1)(y + size - 1) + horiz(x)(y+1) + vert(y)(x+1)
+          if (power > newMax._1)
+            newMax = (power, (x+1, y+1, size))
+          power
+        }.toArray).toArray
+
+        val newHoriz = grid.indices.map(y =>
+          (0 to grid.length-size).map(x => horiz(y)(x) + grid(y)(x+size-1)).toArray
+        ).toArray
+
+        val newVert = grid.indices.map(x =>
+          (0 to grid.length-size).map(y => vert(x)(y) + grid(y+size-1)(x)).toArray
+        ).toArray
+
+        maximize(newBoard, newHoriz, newVert, size+1, newMax)
+      }
+
+    show(grid)
+
+    val part1 = bySize(3).max
+    val part2 = 1
+
+    println("XXX" + maximize(grid, grid, grid.transpose))
+  }
+
+  object day12 {
+    val input = Source.fromFile("data2018/12").getLines
+
+    val initial = input.next().splitAt("initial state: ".length)._2
+    input.next()
+
+    val rules = input.map(_.split(" => ")).map(p => (p(0), p(1))).toMap
+
+    def step(state: String, start: Long = 0) = {
+      val nextState = ("....." + state + ".....").sliding(5).map(s => rules.getOrElse(s, ".")).mkString
+      val delta = nextState.span(_ == '.')._1.length-3
+      (nextState.splitAt(nextState.lastIndexOf('#')+1)._1.substring(3+delta), start+delta)
+    }
+
+    def count(pair: (String, Long)) =
+      pair._1.zipWithIndex.map {
+        case ('#', n) => n+pair._2
+        case _ => 0
+      }.sum
+
+    val part1 = count((1L to 20L).foldLeft((initial, 0L)) {
+      case ((state, start), _) => step(state, start)
+    })
+
+    // Running several hundred times, you note that the pattern is constant, moving to the right. The pattern is:
+    val pattern = "#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#....#..#....#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#..#"
+
+    // And the start position (first offest with a #), is the iteration minus 88, derived by manual inspection
+    val part2 = count((pattern, 50000000000L-88L))
+  }
+
   def main(args: Array[String]) {
-    println(day10.part2)
+
+    val bars = Array(6, 4, 14, 6, 8, 13, 9, 7, 10, 6, 12)
+    val border = Array(Integer.MAX_VALUE, Integer.MAX_VALUE)
+    val jumps = (border ++ bars ++ border).sliding(5)
+    val possible = jumps.zipWithIndex.map { case
+      (window@Array(_, _, myHeight, _, _), index) => (index-2 to index+2).zip(window).flatMap {
+        case (neighbour, height) => if (height < myHeight) Some(neighbour) else None
+      }
+    }.toArray
+
+    def run(index: Int, acc: Map[Int, Int] = Map(), seen: Set[Int] = Set()): (Option[Int], Map[Int, Int]) = {
+      if (seen.contains(index))
+        (None, acc)
+      else
+        acc.get(index).map(jumps =>
+          (Some(jumps), acc)
+        ).getOrElse {
+          val possible_jumps = possible(index)
+          val (jumps, newAcc) = possible_jumps.foldLeft((None: Option[Int], acc)) {
+            case ((jumps1, acc), newIndex) =>
+              val (jumps2, newAcc) = run(newIndex, acc, seen + newIndex)
+              (Seq(jumps1, jumps2).max, newAcc)
+          }
+          val jumps3 = if (possible_jumps.isEmpty) 0 else 1 + jumps.getOrElse(0)
+          (Some(jumps3), newAcc + (index -> jumps3))
+        }
+    }
+
+    println((possible.indices.foldLeft(Map[Int, Int]()))({ case (acc, index) => run(index, acc)._2}))
+
   }
 }
+*/
