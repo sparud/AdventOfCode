@@ -3,7 +3,7 @@ import java.time.LocalDateTime
 import scala.io.Source
 
 import scala.collection.mutable.{Set, Map, HashSet, HashMap, Queue, PriorityQueue}
-
+/*
 case class Edge[A](node: Node[A], weight: Int)
 
 class Node[A](val name: A) {
@@ -21,11 +21,6 @@ class Node[A](val name: A) {
 
 object DSPA {
 
-  // For the purposes of the DSPA algorithm, nodes will be ordered
-  // according to the distance from source
-  // PriorityQueue orders according to highest priority first and
-  // we want elements with shorter distances to have priority, so
-  // we reverse the operation
   def QueueOrdering[A] = new Ordering[Node[A]] {
     def compare(a:Node[A], b:Node[A]) = b.distance - a.distance
   }
@@ -201,3 +196,4 @@ object Day17Runner {
     println(LocalDateTime.now())
   }
 }
+*/
